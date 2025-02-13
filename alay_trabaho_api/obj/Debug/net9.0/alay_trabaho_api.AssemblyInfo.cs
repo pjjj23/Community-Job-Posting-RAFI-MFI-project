@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("alay_trabaho_api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+26d51ab466735c358c29552e8920c1575a60da4a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1245fabe3362d6a650601cde3eb9e04463f6b088")]
 [assembly: System.Reflection.AssemblyProductAttribute("alay_trabaho_api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("alay_trabaho_api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

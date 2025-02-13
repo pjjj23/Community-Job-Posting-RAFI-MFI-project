@@ -12,7 +12,7 @@ using alay_trabaho_api.Data;
 namespace alay_trabaho_api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250213101036_InitialCreate")]
+    [Migration("20250213190447_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

@@ -1,0 +1,315 @@
+openapi: 3.0.1
+info:
+  title: AlayTrabaho API
+  description: alay_trabaho_api
+  version: 1.0
+servers:
+  - url: http://localhost:5202
+    description: Localhost server
+paths:
+  /api/Users:
+    get:
+      summary: Get all users
+      description: Retrieve a list of all registered users.
+      responses:
+        '200':
+          description: A list of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+    post:
+      summary: Create a new user
+      description: Add a new user to the database.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /api/Users/{id}:
+    get:
+      summary: Get a user by ID
+      description: Retrieve user details by ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+    put:
+      summary: Update user details
+      description: Update an existing user's information by ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+      responses:
+        '200':
+          description: User updated successfully
+    delete:
+      summary: Delete a user
+      description: Remove a user from the database by ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: User deleted successfully
+
+  /api/Auth/Login:
+    post:
+      summary: User login
+      description: Authenticate a user and generate a token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+      responses:
+        '200':
+          description: User authenticated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: JWT token for authentication
+        '401':
+          description: Invalid credentials
+
+  /api/Jobs:
+    get:
+      summary: Get all job postings
+      description: Retrieve a list of all job postings.
+      responses:
+        '200':
+          description: A list of job postings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Job'
+    post:
+      summary: Create a new job posting
+      description: Add a new job posting to the system.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobCreate'
+      responses:
+        '201':
+          description: Job created successfully
+
+  /api/Jobs/{id}:
+    get:
+      summary: Get a job by ID
+      description: Retrieve details of a specific job by ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Job details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+        '404':
+          description: Job not found
+    put:
+      summary: Update job posting
+      description: Update an existing job posting by ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobUpdate'
+      responses:
+        '200':
+          description: Job updated successfully
+    delete:
+      summary: Delete a job posting
+      description: Remove a job posting by ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Job deleted successfully
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        firstName:
+          type: string
+        middleName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        contactNumber:
+          type: string
+        role:
+          type: string
+        birthday:
+          type: string
+          format: date
+        address:
+          type: string
+        profilePicture:
+          type: string
+        description:
+          type: string
+    UserCreate:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - email
+        - password
+        - role
+      properties:
+        firstName:
+          type: string
+        middleName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        role:
+          type: string
+    UserUpdate:
+      type: object
+      properties:
+        firstName:
+          type: string
+        middleName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        contactNumber:
+          type: string
+        birthday:
+          type: string
+          format: date
+        address:
+          type: string
+        description:
+          type: string
+        profilePicture:
+          type: string
+    Login:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    Job:
+      type: object
+      properties:
+        id:
+          type: integer
+        jobTitle:
+          type: string
+        description:
+          type: string
+        location:
+          type: string
+        salary:
+          type: string
+        companyId:
+          type: integer
+    JobCreate:
+      type: object
+      required:
+        - jobTitle
+        - description
+        - location
+        - salary
+        - companyId
+      properties:
+        jobTitle:
+          type: string
+        description:
+          type: string
+        location:
+          type: string
+        salary:
+          type: string
+        companyId:
+          type: integer
+    JobUpdate:
+      type: object
+      properties:
+        jobTitle:
+          type: string
+        description:
+          type: string
+        location:
+          type: string
+        salary:
+          type: string
