@@ -10,7 +10,8 @@ class LandingPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            SizedBox(height: 40),
+            Spacer(),
+            SizedBox(height: 5),
 
             // AlayTRABAHO Logo
             RichText(
@@ -37,20 +38,7 @@ class LandingPage extends StatelessWidget {
               ),
             ),
 
-            SizedBox(height: 10),
-
-            // Tagline
-            Text(
-              "Connecting people to their dream jobs",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.green,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-
-            SizedBox(height: 10),
+            SizedBox(height: 5),
 
             // Top left image
             Row(
@@ -65,6 +53,19 @@ class LandingPage extends StatelessWidget {
                   height: 180,
                 ),
               ],
+            ),
+
+            SizedBox(height: 5),
+
+            // Tagline
+            Text(
+              "Connecting people to their dream jobs",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.green,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
             ),
 
             SizedBox(height: 10),
@@ -93,9 +94,7 @@ class LandingPage extends StatelessWidget {
               ),
             ),
 
-            Spacer(),
-
-            SizedBox(height: 20),
+            SizedBox(height: 50),
 
             // Login Button
             ElevatedButton(
