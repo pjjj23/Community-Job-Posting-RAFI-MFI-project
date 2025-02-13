@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\buildMultiTargeting\alay_trabaho_api.props" />
+</Project>

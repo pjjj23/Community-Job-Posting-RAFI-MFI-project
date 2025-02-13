@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\build\Job-Posting_Project.props" />
-</Project>

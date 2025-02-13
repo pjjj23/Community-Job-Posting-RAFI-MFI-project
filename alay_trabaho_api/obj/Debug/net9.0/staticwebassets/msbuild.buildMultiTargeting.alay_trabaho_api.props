@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\alay_trabaho_api.props" />
+</Project>
