@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class LoginPage extends StatelessWidget {
-  const LoginPage({Key? key}) : super(key: key);
+  const LoginPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -15,6 +15,7 @@ class LoginPage extends StatelessWidget {
               const SizedBox(height: 40),
               // App Logo or Title
               Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     'Alay',
@@ -149,7 +150,9 @@ class LoginPage extends StatelessWidget {
                           ),
                         ),
                         TextButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/register');
+                          },
                           child: Text(
                             'SignUp',
                             style: TextStyle(
