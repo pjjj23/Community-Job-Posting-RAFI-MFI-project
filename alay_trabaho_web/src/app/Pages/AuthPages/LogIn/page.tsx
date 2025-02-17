@@ -21,12 +21,36 @@ const LoginPage = () => {
     document.title = "Login | AlayTrabaho";
   }, []); 
 
-  const handleSubmit = (e: { preventDefault: () => void; }) => {
+  const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => setIsLoading(false), 1500);
+  
+    try {
+      const response = await fetch("http://localhost:5202/api/Users/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+  
+      const data = await response.json();
+      if (response.ok) {
+        alert("Login successful!");
+        console.log(data); // You can save data.userId or token to localStorage
+        // Redirect to the dashboard or another page
+        window.location.href = "../userPages/dashboard";
+      } else {
+        alert(data.message || "Login failed!");
+      }
+    } catch (error) {
+      console.error("Error logging in:", error);
+      alert("An error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100  flex flex-col overflow-hidden relative">
