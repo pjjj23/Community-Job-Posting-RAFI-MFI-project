@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using alay_trabaho_api.Data;
 using alay_trabaho_api.Models;
 using Microsoft.EntityFrameworkCore;
+using BCrypt.Net;
 
 namespace alay_trabaho_api.Controllers
 {
@@ -18,54 +19,99 @@ namespace alay_trabaho_api.Controllers
 
         // GET: api/Users
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        public async Task<ActionResult> GetUsers()
         {
-            return await _context.Users.Include(u => u.UserStatus).ToListAsync();
+            var users = await _context.Users
+                .Include(u => u.UserStatus)
+                .Select(user => new
+                {
+                    user.ProfileID,
+                    user.FirstName,
+                    user.LastName,
+                    user.Email,
+                    user.ContactNumber,
+                    user.Role,
+                    user.Birthday,
+                    user.Address,
+                    user.Description,
+                    user.ProfilePicture,
+                    user.UserStatusID
+                }) // Exclude password field
+                .ToListAsync();
+
+            return Ok(users);
         }
 
         // GET: api/Users/{id}
-        [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUser(int id)
+        [HttpGet("{id:int}")] // Ensure 'id' is an integer
+        public async Task<ActionResult> GetUser(int id)
         {
-            var user = await _context.Users.Include(u => u.UserStatus).FirstOrDefaultAsync(u => u.ProfileID == id);
+            var user = await _context.Users
+                .Include(u => u.UserStatus)
+                .Where(u => u.ProfileID == id)
+                .Select(user => new
+                {
+                    user.ProfileID,
+                    user.FirstName,
+                    user.LastName,
+                    user.Email,
+                    user.ContactNumber,
+                    user.Role,
+                    user.Birthday,
+                    user.Address,
+                    user.Description,
+                    user.ProfilePicture,
+                    user.UserStatusID
+                }) // Exclude password field
+                .FirstOrDefaultAsync();
 
             if (user == null)
             {
-                return NotFound("User not found.");
+                return NotFound(new { message = "User not found." });
             }
 
-            return user;
+            return Ok(user);
         }
 
         // POST: api/Users
         [HttpPost]
-        public async Task<ActionResult<User>> CreateUser(User user)
+        public async Task<IActionResult> Register(User user)
         {
-            // Check for duplicate email
-            if (await _context.Users.AnyAsync(u => u.Email == user.Email))
+            if (!ModelState.IsValid)
             {
-                return BadRequest("Email already exists.");
+                return BadRequest(ModelState);
             }
 
+            // Check if the email already exists
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
+            if (existingUser != null)
+            {
+                return BadRequest(new { message = "Email already exists" });
+            }
+
+            // Hash the password
+            user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
+
+            // Save the user to the database
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetUser), new { id = user.ProfileID }, user);
+            return Ok(new { message = "User registered successfully" });
         }
 
         // PUT: api/Users/{id}
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")] // Ensure 'id' is an integer
         public async Task<IActionResult> UpdateUser(int id, User updatedUser)
         {
             if (id != updatedUser.ProfileID)
             {
-                return BadRequest("User ID mismatch.");
+                return BadRequest(new { message = "User ID mismatch." });
             }
 
             var existingUser = await _context.Users.FindAsync(id);
             if (existingUser == null)
             {
-                return NotFound("User not found.");
+                return NotFound(new { message = "User not found." });
             }
 
             // Update fields
@@ -74,13 +120,18 @@ namespace alay_trabaho_api.Controllers
             existingUser.LastName = updatedUser.LastName;
             existingUser.ContactNumber = updatedUser.ContactNumber;
             existingUser.Email = updatedUser.Email;
-            existingUser.Password = updatedUser.Password;
             existingUser.Role = updatedUser.Role;
             existingUser.Birthday = updatedUser.Birthday;
             existingUser.Address = updatedUser.Address;
             existingUser.Description = updatedUser.Description;
             existingUser.ProfilePicture = updatedUser.ProfilePicture;
             existingUser.UserStatusID = updatedUser.UserStatusID;
+
+            // Only hash the password if it was updated
+            if (!string.IsNullOrEmpty(updatedUser.Password))
+            {
+                existingUser.Password = BCrypt.Net.BCrypt.HashPassword(updatedUser.Password);
+            }
 
             _context.Entry(existingUser).State = EntityState.Modified;
             await _context.SaveChangesAsync();
@@ -89,13 +140,13 @@ namespace alay_trabaho_api.Controllers
         }
 
         // DELETE: api/Users/{id}
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:int}")] // Ensure 'id' is an integer
         public async Task<IActionResult> DeleteUser(int id)
         {
             var user = await _context.Users.FindAsync(id);
             if (user == null)
             {
-                return NotFound("User not found.");
+                return NotFound(new { message = "User not found." });
             }
 
             _context.Users.Remove(user);
@@ -103,5 +154,41 @@ namespace alay_trabaho_api.Controllers
 
             return NoContent();
         }
+
+        // POST: api/Users/Login
+        [HttpPost("Login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            // Find user by email
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == loginRequest.Email);
+            if (user == null)
+                return Unauthorized(new { message = "Invalid email or password" });
+
+            // Verify password
+            if (!BCrypt.Net.BCrypt.Verify(loginRequest.Password, user.Password))
+                return Unauthorized(new { message = "Invalid email or password" });
+
+            return Ok(new
+            {
+                message = "Login successful",
+                user = new
+                {
+                    user.ProfileID,
+                    user.FirstName,
+                    user.LastName,
+                    user.Email,
+                    user.Role
+                }
+            });
+        }
+    }
+
+    public class LoginRequest
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
     }
 }

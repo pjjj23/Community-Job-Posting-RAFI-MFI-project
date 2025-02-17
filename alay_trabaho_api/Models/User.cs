@@ -16,7 +16,8 @@ namespace alay_trabaho_api.Models
         [Required]
         public required string LastName { get; set; }
 
-        public string? ContactNumber { get; set; }
+        [Required]
+        public required int ContactNumber { get; set; }
 
         [Required, EmailAddress]
         public required string Email { get; set; }
