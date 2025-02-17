@@ -1,7 +1,68 @@
-import 'package:flutter/material.dart';
+// ignore_for_file: use_build_context_synchronously
 
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+// ignore: must_be_immutable
 class RegisterPage extends StatelessWidget {
-  const RegisterPage({super.key});
+  RegisterPage({super.key});
+
+  // Controllers for input fields
+  final TextEditingController firstNameController = TextEditingController();
+  final TextEditingController middleNameController = TextEditingController();
+  final TextEditingController lastNameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController contactNumberController = TextEditingController();
+  String selectedRole = 'Employee'; // Default role
+
+  // Function to handle API call for sign-up
+  Future<void> _signUp(BuildContext context) async {
+    final Uri url = Uri.parse('http://10.0.2.2:5202/api/Users');
+    // Replace with your API URL
+
+    // Collect user input
+    final Map<String, dynamic> userData = {
+      "FirstName": firstNameController.text,
+      "MiddleName": middleNameController.text,
+      "LastName": lastNameController.text,
+      "Email": emailController.text,
+      "Password": passwordController.text,
+      "ContactNumber": contactNumberController.text,
+      "Role": selectedRole,
+    };
+
+    try {
+      // Send POST request to the API
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(userData),
+      );
+
+      if (response.statusCode == 200) {
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Registration successful!')),
+        );
+        // Navigate back to login
+        Navigator.pop(context);
+      } else {
+        // Show error message
+        final responseBody = json.decode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(responseBody['message'] ?? 'Registration failed.')),
+        );
+      }
+    } catch (error) {
+      // Handle network or other errors
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('An error occurred: $error')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,6 +149,7 @@ class RegisterPage extends StatelessWidget {
                         Expanded(
                           child: _buildTextField(
                             hint: 'First Name',
+                            controller: firstNameController,
                             prefixIcon: Icons.person_outline,
                           ),
                         ),
@@ -95,6 +157,7 @@ class RegisterPage extends StatelessWidget {
                         Expanded(
                           child: _buildTextField(
                             hint: 'Middle Name',
+                            controller: middleNameController,
                             prefixIcon: Icons.person_outline,
                           ),
                         ),
@@ -102,6 +165,7 @@ class RegisterPage extends StatelessWidget {
                         Expanded(
                           child: _buildTextField(
                             hint: 'Last Name',
+                            controller: lastNameController,
                             prefixIcon: Icons.person_outline,
                           ),
                         ),
@@ -110,24 +174,27 @@ class RegisterPage extends StatelessWidget {
                     const SizedBox(height: 16),
                     _buildTextField(
                       hint: 'Email',
+                      controller: emailController,
                       prefixIcon: Icons.email_outlined,
                     ),
                     const SizedBox(height: 16),
                     _buildTextField(
                       hint: 'Password',
+                      controller: passwordController,
                       prefixIcon: Icons.lock_outline,
                       isPassword: true,
                     ),
                     const SizedBox(height: 16),
                     _buildTextField(
                       hint: 'Contact Number',
+                      controller: contactNumberController,
                       prefixIcon: Icons.phone_outlined,
                     ),
                     const SizedBox(height: 16),
                     _buildDropdownField(),
                     const SizedBox(height: 24),
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () => _signUp(context),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue[500],
                         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -186,6 +253,7 @@ class RegisterPage extends StatelessWidget {
 
   Widget _buildTextField({
     required String hint,
+    required TextEditingController controller,
     required IconData prefixIcon,
     bool isPassword = false,
   }) {
@@ -195,6 +263,7 @@ class RegisterPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: TextField(
+        controller: controller,
         obscureText: isPassword,
         decoration: InputDecoration(
           hintText: hint,
@@ -236,18 +305,17 @@ class RegisterPage extends StatelessWidget {
           ),
           filled: true,
           fillColor: Colors.grey[100],
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 12,
-          ),
         ),
-        items: ['Employee', 'Employer', 'Admin']
-            .map((role) => DropdownMenuItem(
-                  value: role,
-                  child: Text(role),
-                ))
-            .toList(),
-        onChanged: (value) {},
+        value: selectedRole,
+        onChanged: (value) {
+          if (value != null) {
+            selectedRole = value;
+          }
+        },
+        items: const [
+          DropdownMenuItem(value: 'Employee', child: Text('Employee')),
+          DropdownMenuItem(value: 'Employer', child: Text('Employer')),
+        ],
       ),
     );
   }

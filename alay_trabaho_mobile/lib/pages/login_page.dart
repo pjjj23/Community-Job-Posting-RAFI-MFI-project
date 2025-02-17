@@ -1,7 +1,72 @@
-import 'package:flutter/material.dart';
+// ignore_for_file: use_build_context_synchronously, avoid_print, library_private_types_in_public_api, deprecated_member_use
 
-class LoginPage extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
+
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  bool _isLoading = false;
+
+  // Function to handle login
+  Future<void> loginUser() async {
+    final Uri url = Uri.parse(
+        'http://10.0.2.2:5202/api/Users/Login'); // Update with your API endpoint
+
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+
+      // Request payload
+      final Map<String, String> data = {
+        'email': _emailController.text,
+        'password': _passwordController.text,
+      };
+
+      // HTTP POST request
+      final response = await http.post(
+        url,
+        body: json.encode(data),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        print("Login Successful: $responseData");
+
+        // Navigate to the home page or dashboard
+        Navigator.pushNamed(context, '/');
+
+        // Optionally show a success snackbar
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Login successful!")),
+        );
+      } else {
+        print("Login failed: ${response.statusCode}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Invalid email or password.")),
+        );
+      }
+    } catch (e) {
+      print("An error occurred: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("An error occurred. Please try again.")),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,6 +143,7 @@ class LoginPage extends StatelessWidget {
                     const SizedBox(height: 20),
                     // Email TextField
                     TextField(
+                      controller: _emailController,
                       decoration: InputDecoration(
                         hintText: 'Email',
                         filled: true,
@@ -91,6 +157,7 @@ class LoginPage extends StatelessWidget {
                     const SizedBox(height: 15),
                     // Password TextField
                     TextField(
+                      controller: _passwordController,
                       obscureText: true,
                       decoration: InputDecoration(
                         hintText: 'Password',
@@ -121,7 +188,11 @@ class LoginPage extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          if (!_isLoading) {
+                            loginUser();
+                          }
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue[600],
                           padding: const EdgeInsets.symmetric(vertical: 15),
@@ -129,13 +200,17 @@ class LoginPage extends StatelessWidget {
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                        child: const Text(
-                          'Submit',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white,
-                          ),
-                        ),
+                        child: _isLoading
+                            ? CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                            : const Text(
+                                'Submit',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
                       ),
                     ),
                     const SizedBox(height: 15),
@@ -177,5 +252,12 @@ class LoginPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 }
