@@ -1,28 +1,24 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: must_be_immutable, use_build_context_synchronously
 
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import '../controller/register_api.dart'; // Import the API logic
 
-// ignore: must_be_immutable
 class RegisterPage extends StatelessWidget {
   RegisterPage({super.key});
 
-  // Controllers for input fields
+  // Input field controllers
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController middleNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController contactNumberController = TextEditingController();
-  String selectedRole = 'Employee'; // Default role
+  String selectedRole = 'Recruiter'; // Default role
 
-  // Function to handle API call for sign-up
+  final AuthService _authService = AuthService(); // AuthService instance
+
   Future<void> _signUp(BuildContext context) async {
-    final Uri url = Uri.parse('http://10.0.2.2:5202/api/Users');
-    // Replace with your API URL
-
-    // Collect user input
+    // Collect user input into a map
     final Map<String, dynamic> userData = {
       "FirstName": firstNameController.text,
       "MiddleName": middleNameController.text,
@@ -33,33 +29,17 @@ class RegisterPage extends StatelessWidget {
       "Role": selectedRole,
     };
 
-    try {
-      // Send POST request to the API
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(userData),
-      );
+    // Call the registerUser method
+    final String? errorMessage = await _authService.registerUser(userData);
 
-      if (response.statusCode == 200) {
-        // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Registration successful!')),
-        );
-        // Navigate back to login
-        Navigator.pop(context);
-      } else {
-        // Show error message
-        final responseBody = json.decode(response.body);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(responseBody['message'] ?? 'Registration failed.')),
-        );
-      }
-    } catch (error) {
-      // Handle network or other errors
+    if (errorMessage == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $error')),
+        const SnackBar(content: Text('Registration successful!')),
+      );
+      Navigator.pop(context); // Navigate back to login
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage)),
       );
     }
   }
@@ -74,179 +54,183 @@ class RegisterPage extends StatelessWidget {
           child: Column(
             children: [
               const SizedBox(height: 40),
-              // App Logo or Title
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Alay',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[800],
-                    ),
-                  ),
-                  Text(
-                    'TRABAHO',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blue[600],
-                    ),
-                  ),
-                ],
-              ),
+              _buildLogo(),
               const SizedBox(height: 20),
-              // First Landing Image
-              Image.asset(
-                'assets/images/LandingImage1.png',
-                height: 120,
-              ),
+              _buildLandingImage('assets/images/LandingImage1.png'),
               const SizedBox(height: 20),
-              // Register Card
-              Container(
-                constraints: const BoxConstraints(maxWidth: 400),
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      // ignore: deprecated_member_use
-                      color: Colors.grey.withOpacity(0.1),
-                      spreadRadius: 2,
-                      blurRadius: 5,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Text(
-                      'Create Account',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF2D3748),
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Join us and start your journey',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[600],
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 24),
-                    // Name Fields Row
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildTextField(
-                            hint: 'First Name',
-                            controller: firstNameController,
-                            prefixIcon: Icons.person_outline,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildTextField(
-                            hint: 'Middle Name',
-                            controller: middleNameController,
-                            prefixIcon: Icons.person_outline,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildTextField(
-                            hint: 'Last Name',
-                            controller: lastNameController,
-                            prefixIcon: Icons.person_outline,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    _buildTextField(
-                      hint: 'Email',
-                      controller: emailController,
-                      prefixIcon: Icons.email_outlined,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildTextField(
-                      hint: 'Password',
-                      controller: passwordController,
-                      prefixIcon: Icons.lock_outline,
-                      isPassword: true,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildTextField(
-                      hint: 'Contact Number',
-                      controller: contactNumberController,
-                      prefixIcon: Icons.phone_outlined,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildDropdownField(),
-                    const SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: () => _signUp(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue[500],
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Text(
-                        'Sign Up',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Already have an account? ',
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: const Text(
-                            'Login',
-                            style: TextStyle(
-                              color: Colors.blue,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+              _buildRegistrationCard(context),
               const SizedBox(height: 20),
-              // Second Landing Image
-              Image.asset(
-                'assets/images/LandingImage2.png',
-                height: 120,
-              ),
+              _buildLandingImage('assets/images/LandingImage2.png'),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildLogo() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          'Alay',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey[800],
+          ),
+        ),
+        Text(
+          'TRABAHO',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.blue[600],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLandingImage(String assetPath) {
+    return Image.asset(
+      assetPath,
+      height: 120,
+    );
+  }
+
+  Widget _buildRegistrationCard(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 400),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            // ignore: deprecated_member_use
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            'Create Account',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF2D3748),
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Join us and start your journey',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey[600],
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: _buildTextField(
+                  hint: 'First Name',
+                  controller: firstNameController,
+                  prefixIcon: Icons.person_outline,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildTextField(
+                  hint: 'Middle Name',
+                  controller: middleNameController,
+                  prefixIcon: Icons.person_outline,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildTextField(
+                  hint: 'Last Name',
+                  controller: lastNameController,
+                  prefixIcon: Icons.person_outline,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildTextField(
+            hint: 'Email',
+            controller: emailController,
+            prefixIcon: Icons.email_outlined,
+          ),
+          const SizedBox(height: 16),
+          _buildTextField(
+            hint: 'Password',
+            controller: passwordController,
+            prefixIcon: Icons.lock_outline,
+            isPassword: true,
+          ),
+          const SizedBox(height: 16),
+          _buildTextField(
+            hint: 'Contact Number',
+            controller: contactNumberController,
+            prefixIcon: Icons.phone_outlined,
+          ),
+          const SizedBox(height: 16),
+          _buildDropdownField(),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () => _signUp(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue[500],
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text(
+              'Sign Up',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Already have an account? ',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text(
+                  'Login',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -313,8 +297,8 @@ class RegisterPage extends StatelessWidget {
           }
         },
         items: const [
-          DropdownMenuItem(value: 'Employee', child: Text('Employee')),
-          DropdownMenuItem(value: 'Employer', child: Text('Employer')),
+          DropdownMenuItem(value: 'Applicant', child: Text('Applicant')),
+          DropdownMenuItem(value: 'Recruiter', child: Text('Recruiter')),
         ],
       ),
     );

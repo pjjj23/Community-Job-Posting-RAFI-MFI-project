@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: Alay Trabaho API - Users
+  title: Alay Trabaho API
   description: API for managing users in the Alay Trabaho application.
   version: 1.0.0
 servers:

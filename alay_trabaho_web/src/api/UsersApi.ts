@@ -1,4 +1,3 @@
-// api/users.ts
 export const createUser = async (userData: {
   firstName: string;
   middleName: string;
@@ -9,7 +8,7 @@ export const createUser = async (userData: {
   role: string;
 }) => {
   try {
-    const response = await fetch("http://localhost:5202/api/Users", {
+    const response = await fetch("https://alaytrabaho-d6g3b8h0gabdgwgb.canadacentral-01.azurewebsites.net/api/Users", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

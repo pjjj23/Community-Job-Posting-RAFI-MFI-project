@@ -26,7 +26,7 @@ const LoginPage = () => {
     setIsLoading(true);
   
     try {
-      const response = await fetch("http://localhost:5202/api/Users/login", {
+      const response = await fetch("http://localhost:5028/api/Users", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

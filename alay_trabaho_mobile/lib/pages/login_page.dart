@@ -1,8 +1,7 @@
 // ignore_for_file: use_build_context_synchronously, avoid_print, library_private_types_in_public_api, deprecated_member_use
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import '../controller/login_api.dart'; // Import the API logic
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -15,52 +14,40 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
+  String? _errorMessage;
 
-  // Function to handle login
-  Future<void> loginUser() async {
-    final Uri url = Uri.parse(
-        'http://10.0.2.2:5202/api/Users/Login'); // Update with your API endpoint
+  Future<void> _handleLogin() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
     try {
-      setState(() {
-        _isLoading = true;
-      });
-
-      // Request payload
-      final Map<String, String> data = {
-        'email': _emailController.text,
-        'password': _passwordController.text,
-      };
-
-      // HTTP POST request
-      final response = await http.post(
-        url,
-        body: json.encode(data),
-        headers: {'Content-Type': 'application/json'},
+      // Call the API function
+      final result = await LoginApi.loginUser(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
       );
 
-      if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
-        print("Login Successful: $responseData");
+      if (result['success']) {
+        print("Login Successful: ${result['data']}");
 
         // Navigate to the home page or dashboard
-        Navigator.pushNamed(context, '/');
+        Navigator.pushReplacementNamed(context, '/dashboard');
 
-        // Optionally show a success snackbar
+        // Show success snackbar
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Login successful!")),
+          const SnackBar(content: Text("Login successful!")),
         );
       } else {
-        print("Login failed: ${response.statusCode}");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Invalid email or password.")),
-        );
+        setState(() {
+          _errorMessage = result['message'];
+        });
       }
     } catch (e) {
-      print("An error occurred: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("An error occurred. Please try again.")),
-      );
+      setState(() {
+        _errorMessage = "An error occurred. Please try again.";
+      });
     } finally {
       setState(() {
         _isLoading = false;
@@ -78,7 +65,6 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             children: [
               const SizedBox(height: 40),
-              // App Logo or Title
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -101,13 +87,11 @@ class _LoginPageState extends State<LoginPage> {
                 ],
               ),
               const SizedBox(height: 20),
-              // First Landing Image
               Image.asset(
                 'assets/images/LandingImage1.png',
                 height: 120,
               ),
               const SizedBox(height: 20),
-              // Login Card
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -141,7 +125,6 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    // Email TextField
                     TextField(
                       controller: _emailController,
                       decoration: InputDecoration(
@@ -155,7 +138,6 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     const SizedBox(height: 15),
-                    // Password TextField
                     TextField(
                       controller: _passwordController,
                       obscureText: true,
@@ -170,7 +152,6 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    // Forgot Password
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
@@ -184,15 +165,10 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    // Submit Button
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          if (!_isLoading) {
-                            loginUser();
-                          }
-                        },
+                        onPressed: _isLoading ? null : _handleLogin,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue[600],
                           padding: const EdgeInsets.symmetric(vertical: 15),
@@ -201,7 +177,7 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                         child: _isLoading
-                            ? CircularProgressIndicator(
+                            ? const CircularProgressIndicator(
                                 color: Colors.white,
                               )
                             : const Text(
@@ -214,7 +190,13 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     const SizedBox(height: 15),
-                    // Sign Up Link
+                    if (_errorMessage != null)
+                      Text(
+                        _errorMessage!,
+                        style: const TextStyle(color: Colors.red),
+                        textAlign: TextAlign.center,
+                      ),
+                    const SizedBox(height: 15),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -242,7 +224,6 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 20),
-              // Second Landing Image
               Image.asset(
                 'assets/images/LandingImage2.png',
                 height: 120,

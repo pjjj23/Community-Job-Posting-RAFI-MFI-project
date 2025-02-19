@@ -13,9 +13,13 @@ class LandingPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Spacer(),
-            SizedBox(height: 5),
+            SizedBox(height: 20),
 
-            // AlayTRABAHO Logo
+            const SizedBox(height: 20),
+            Image.asset(
+              'assets/images/Logo.png',
+              height: 80,
+            ),
             RichText(
               textAlign: TextAlign.center,
               text: TextSpan(
@@ -48,11 +52,11 @@ class LandingPage extends StatelessWidget {
               children: [
                 Image.asset(
                   'assets/images/LandingImage3.png',
-                  height: 150,
+                  height: 120,
                 ),
                 Image.asset(
                   'assets/images/LandingImage1.png',
-                  height: 180,
+                  height: 120,
                 ),
               ],
             ),
@@ -149,11 +153,11 @@ class LandingPage extends StatelessWidget {
               children: [
                 Image.asset(
                   'assets/images/LandingImage4.png',
-                  height: 150,
+                  height: 120,
                 ),
                 Image.asset(
                   'assets/images/LandingImage2.png',
-                  height: 150,
+                  height: 120,
                 ),
               ],
             ),
